@@ -1,0 +1,9 @@
+mpmath==1.1.0
+numpy==1.19.0
+pandas==1.1.5
+pyreadr==0.3.9
+python-dateutil==2.8.1
+pytz==2020.4
+scipy==1.5.4
+six==1.15.0
+sympy==1.7.1
