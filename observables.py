@@ -1,3 +1,8 @@
+'''
+This file was directly copied from the
+codebase at https://github.com/sklus/d3s
+'''
+
 import math
 import numpy as _np
 from scipy.spatial import distance
