@@ -48,14 +48,14 @@ import observables
 
 X = np.array([
     [2, 1],
-    [2, 2],
-    [2, 3],
-    [2, 4]
+    [2, 2]
+    # [2, 3],
+    # [2, 4]
 ])
 
 x_str = ""
 for i in range(X.shape[0]):
-    x_str += '{' + str(i) + '}, '
+    x_str += 'x_' + str(i) + ', '
 x_syms = symbols(x_str)
 
 M = itermonomials(x_syms, 2)
@@ -63,10 +63,10 @@ sortedM = sorted(M, key=monomial_key('grlex', np.flip(x_syms)))
 print(sortedM)
 
 # input is order up to which monomials will go
-psi = observables.monomials(3)
-print(psi.diff(X).shape)
-print(psi.diff(X)[14, 1])
-Psi_X = psi(X)
+# psi = observables.monomials(3)
+# print(psi.diff(X).shape)
+# print(psi.diff(X)[14, 1])
+# Psi_X = psi(X)
 
 # dPsiY = np.einsum('ijk,jk->ik', psi.diff(X), Y)
 # print(dPsiY)
