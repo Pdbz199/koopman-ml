@@ -1,3 +1,6 @@
-import pyreadr
+import pandas as pd
 
-result = pyreadr.read_r('C:/Users/wrozw/Desktop/Python Koopman/coindata30.RData')
+# get dataframe from CSV file
+coin_data = pd.read_csv('../ExportedCoinData.csv')
+
+print(coin_data.loc[0]) # prints first entry of dataframe
