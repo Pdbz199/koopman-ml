@@ -1,9 +1,8 @@
 import numpy as np
 import observables
+import pandas as pd
 
-def gEDMD(X):
-  m = X.shape[0]
-  psi = observables.monomials(m)
+def gEDMD(X, psi):
   Psi_X = psi(X)
   nablaPsi = psi.diff(X)
   nabla2Psi = psi.ddiff(X)
@@ -36,5 +35,35 @@ X = np.array([
   [2, 4]
 ])
 
-L = gEDMD(X)
-print(L)
+# get dataframe from CSV file
+# df = (pd.read_csv('../ExportedCoinData.csv')
+#       .groupby(['datetime']))
+
+d = X.shape[0]
+m = X.shape[1]
+psi = observables.monomials(8)
+Psi_X = psi(X)
+k = Psi_X.shape[0]
+Bt = np.zeros((d, k))
+if Bt.shape[1] == 1:
+  Bt[0,0] = 1
+else:
+    row = 0
+    for i in range(1, d+1):
+      Bt[row,i] = 1
+      row += 1
+B = np.transpose(Bt)
+
+def b(x):
+  return np.transpose(L @ B) * Psi_X[:,x]
+
+L = gEDMD(X, psi)
+# print(L)
+
+'''
+NOTES:
+
+Thing  to do is
+Fit model predictive value would be the mean?
+MLE?
+'''

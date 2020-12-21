@@ -2,7 +2,7 @@ import numpy as np
 import observables
 
 def SINDy(X, eps=0.001, iterations=10):
-    m = X.shape[0]
+    m = X.shape[1]
     psi = observables.monomials(m)
     PsiX = psi(X)
 
