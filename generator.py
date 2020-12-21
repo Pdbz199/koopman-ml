@@ -19,7 +19,7 @@ def gEDMD(X, psi):
   dPsi_X = np.zeros((k, m))
   for row in range(k):
     for column in range(m-1):
-      dPsi_X[row,column] = dpsi(row,column)
+      dPsi_X[row, column] = dpsi(row, column)
 
   # calculate \widehat{L}^\top
   M = dPsi_X @ np.linalg.pinv(Psi_X)
@@ -54,11 +54,24 @@ else:
       row += 1
 B = np.transpose(Bt)
 
-def b(x):
-  return np.transpose(L @ B) * Psi_X[:,x]
-
 L = gEDMD(X, psi)
 # print(L)
+
+def b(l):
+  return np.transpose(L @ B) * Psi_X[:, l]
+
+# sigma = np.zeros((d, d))
+# for i in range(d):
+#   for j in range(d):
+#     x_i = X[i]
+#     x_j = X[j]
+#       # a[i,j] is a function that takes in the index of \psi and x and completes the calculation
+#     a[i, j] = lambda k, l: (L * Psi_X[k, l]) - (b(l)[i]*x_j) - (b(l)[j]*x_i)
+
+# def sigma(l):
+#   return (L * Psi_X[k, l]) - b(2)
+
+# num squared or multiplied terms = (dC2) + d
 
 '''
 NOTES:
