@@ -30,10 +30,10 @@ def constructSecondOrderB(d, n):
 
 # Dataset
 X = np.array([
-  [1, 2],
-  [2, 2],
-  [2, 3],
-  [2, 4]
+  [1, 2, 3],
+  [2, 3, 4],
+  [2, 3, 4],
+  [2, 3, 4]
 ])
 
 # get dataframe from CSV file
@@ -78,23 +78,24 @@ L = np.transpose(M) # estimate of Koopman generator
 
 # Eigen decomposition
 eig_vals, eig_vecs = np.linalg.eigh(L)
-# print(eig_vals)
-# print(eig_vecs)
+# print(eig_vals.shape)
+# print(eig_vecs.shape)
 
 # Construct B matrix (selects first-order monomials except 1)
 B = constructB(d, n)
 # Calculate Koopman modes
 V = np.transpose(B) @ np.linalg.inv(np.transpose(eig_vecs))
-# print(V.shape)
+print(V.shape)
 # Compute eigenfunctions
 eig_funcs = np.transpose(eig_vecs) @ Psi_X
 # print(eig_funcs)
-print(eig_funcs[0,0])
 
 def bb(l):
+  # DIMENSION REDUCTIONNnNnnnnNNNNNNNNn
+  num_dims = 8
   res = 0
-  for ell in range(d):
-    res += eig_vals[ell] * eig_funcs[ell, l] * V[ell]
+  for ell in range(n-1, n-num_dims, -1):
+    res += eig_vals[ell] * eig_funcs[ell, l] * V[:, ell]
   return res
 
 print(bb(0))
@@ -102,6 +103,8 @@ print(bb(0))
 # b function
 def b(l):
   return np.transpose(L @ B) @ Psi_X[:, l]
+
+print(b(0))
 
 # Construct second order B matrix (selects second-order monomials)
 second_orderB = constructSecondOrderB(d, n)
