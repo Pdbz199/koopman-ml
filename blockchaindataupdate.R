@@ -108,4 +108,8 @@ finalsub <- final[datetime > "2018-06-01"]
 finalsub[, count := .N, by = coin]
 finalsub <- finalsub[count==max(count)]
 
-saveRDS(final, file = "coindata30.RDS")
+# saveRDS(final, file = "coindata30.RDS")
+
+ggplot(final, aes(datetime, price, color = coin)) + geom_line() + facet_wrap(~coin, scales = "free") + title(main = "Hourly Price-Pair Time Series")
+[5:53 PM]
+ggplot(final, aes(returns, color = coin, group = coin)) + geom_density(show.legend = F) + facet_wrap(~coin, scales = "free")

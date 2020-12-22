@@ -1,33 +1,34 @@
+import math
 import numpy as np
 import observables
 import pandas as pd
 
-def gEDMD(X, psi):
-  Psi_X = psi(X)
-  nablaPsi = psi.diff(X)
-  nabla2Psi = psi.ddiff(X)
-  k = Psi_X.shape[0]
+def constructB(d, n):
+  Bt = np.zeros((d, n))
+  if Bt.shape[1] == 1:
+    Bt[0,0] = 1
+  else:
+      row = 0
+      for i in range(1, d+1):
+        Bt[row,i] = 1
+        row += 1
+  B = np.transpose(Bt)
+  return B
 
-  # t = 1 is a placeholder time step, not really sure what it should be
-  def dpsi(k, l, t=1):
-    term_1 = (1/t)*(X[:, l+1]-X[:, l])
-    term_2 = nablaPsi[k, :, l]
-    term_3 = (1/(2*t)) * ((X[:, l+1]-X[:, l]) * np.transpose(X[:, l+1]-X[:, l]))
-    term_4 = nabla2Psi[k, :, :, l]
-    return np.dot(term_1,term_2) + np.sum(np.multiply(term_3,term_4))
+def constructSecondOrderB(d, n):
+  new_dim = int(d*(d+1)/2)
+  Bt = np.zeros((new_dim, n))
+  if Bt.shape[1] == 1:
+    Bt[0,0] = 1
+  else:
+      row = 0
+      for i in range(d+1, d+1+new_dim):
+        Bt[row,i] = 1
+        row += 1
+  B = np.transpose(Bt)
+  return B
 
-  dPsi_X = np.zeros((k, m))
-  for row in range(k):
-    for column in range(m-1):
-      dPsi_X[row, column] = dpsi(row, column)
-
-  # calculate \widehat{L}^\top
-  M = dPsi_X @ np.linalg.pinv(Psi_X)
-  # estimate of Koopman generator
-  L = np.transpose(M)
-  return L
-
-
+# Dataset
 X = np.array([
   [1, 2],
   [2, 2],
@@ -36,42 +37,80 @@ X = np.array([
 ])
 
 # get dataframe from CSV file
-# df = (pd.read_csv('../ExportedCoinData.csv')
-#       .groupby(['datetime']))
+# code takes like 5-10 minutes to run
+# coin_data = pd.read_csv('../coindatav4.csv')
+# print(coin_data.columns)
+# coin_data = coin_data.drop(columns=['Unnamed: 0', 'coin', 'returns'])
 
+# g = coin_data.groupby('datetime').cumcount()
+# X = np.transpose(np.array((coin_data.set_index(['datetime',g])
+#         .unstack(fill_value=0)
+#         .stack().groupby(level=0)
+#         .apply(lambda x: np.array(x.values.tolist()).reshape(len(x)))
+#         .tolist())))
+# print(X.shape)
 d = X.shape[0]
 m = X.shape[1]
-psi = observables.monomials(8)
+psi = observables.monomials(4) # I don't have enough memory for 5+
 Psi_X = psi(X)
-k = Psi_X.shape[0]
-Bt = np.zeros((d, k))
-if Bt.shape[1] == 1:
-  Bt[0,0] = 1
-else:
-    row = 0
-    for i in range(1, d+1):
-      Bt[row,i] = 1
-      row += 1
-B = np.transpose(Bt)
+nablaPsi = psi.diff(X)
+nabla2Psi = psi.ddiff(X)
+n = Psi_X.shape[0]
 
-L = gEDMD(X, psi)
-# print(L)
+# t = 1 is a placeholder time step, not really sure what it should be
+def dpsi(k, l, t=1):
+  term_1 = (1/t)*(X[:, l+1]-X[:, l])
+  term_2 = nablaPsi[k, :, l]
+  term_3 = (1/(2*t)) * ((X[:, l+1]-X[:, l]) * np.transpose(X[:, l+1]-X[:, l]))
+  term_4 = nabla2Psi[k, :, :, l]
+  return np.dot(term_1,term_2) + np.sum(np.multiply(term_3,term_4))
 
+# Construct \text{d}\Psi_X matrix
+dPsi_X = np.zeros((n, m))
+for row in range(n):
+  for column in range(m-1):
+    dPsi_X[row, column] = dpsi(row, column)
+
+# Calculate Koopman generator approximation
+M = dPsi_X @ np.linalg.pinv(Psi_X) # \widehat{L}^\top
+L = np.transpose(M) # estimate of Koopman generator
+# print(L.shape)
+
+# Eigen decomposition
+eig_vals, eig_vecs = np.linalg.eigh(L)
+# print(eig_vals)
+# print(eig_vecs)
+
+# Construct B matrix (selects first-order monomials except 1)
+B = constructB(d, n)
+# Calculate Koopman modes
+V = np.transpose(B) @ np.linalg.inv(np.transpose(eig_vecs))
+# print(V.shape)
+# Compute eigenfunctions
+eig_funcs = np.transpose(eig_vecs) @ Psi_X
+# print(eig_funcs)
+print(eig_funcs[0,0])
+
+def bb(l):
+  res = 0
+  for ell in range(d):
+    res += eig_vals[ell] * eig_funcs[ell, l] * V[ell]
+  return res
+
+print(bb(0))
+
+# b function
 def b(l):
-  return np.transpose(L @ B) * Psi_X[:, l]
+  return np.transpose(L @ B) @ Psi_X[:, l]
 
-# sigma = np.zeros((d, d))
-# for i in range(d):
-#   for j in range(d):
-#     x_i = X[i]
-#     x_j = X[j]
-#       # a[i,j] is a function that takes in the index of \psi and x and completes the calculation
-#     a[i, j] = lambda k, l: (L * Psi_X[k, l]) - (b(l)[i]*x_j) - (b(l)[j]*x_i)
+# Construct second order B matrix (selects second-order monomials)
+second_orderB = constructSecondOrderB(d, n)
 
-# def sigma(l):
-#   return (L * Psi_X[k, l]) - b(2)
+# a function
+def a(l):
+  return (np.transpose(L @ second_orderB) @ Psi_X[:, l]) - ((np.transpose(second_orderB) @ nablaPsi[:, :, l]) @ b(l))
 
-# num squared or multiplied terms = (dC2) + d
+
 
 '''
 NOTES:
