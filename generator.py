@@ -1,3 +1,5 @@
+# In this code, l will be used to refer to x_l, or the lth snapshot of the state observables, X
+
 import math
 import numpy as np
 import observables
