@@ -60,7 +60,8 @@ x_syms = symbols(x_str)
 
 M = itermonomials(x_syms, 2)
 sortedM = sorted(M, key=monomial_key('grlex', np.flip(x_syms)))
-print(sortedM)
+for thing in sortedM:
+    print(str(thing))
 
 # input is order up to which monomials will go
 # psi = observables.monomials(3)
