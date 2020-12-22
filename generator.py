@@ -36,7 +36,7 @@ def constructSecondOrderB(s, n):
     return B
 
 # Get dataframe from CSV file
-coin_data = pd.read_csv('../coindatav4.csv')
+coin_data = pd.read_csv('coindatav4.csv')
 coin_data = coin_data.drop(columns=['Unnamed: 0', 'coin', 'price']) # returns
 g = coin_data.groupby('datetime').cumcount()
 X = np.transpose(np.array((coin_data.set_index(['datetime',g])
@@ -44,7 +44,7 @@ X = np.transpose(np.array((coin_data.set_index(['datetime',g])
         .stack().groupby(level=0)
         .apply(lambda x: np.array(x.values.tolist()).reshape(len(x)))
         .tolist())))
-X = X[:, int(X.shape[1]*0.8):] # last 20% of snapshots
+X = X[:, int(X.shape[1]*0.80):] # last 20% of snapshots
 
 # Various setup variables and definitions
 d = X.shape[0]
