@@ -44,13 +44,13 @@ X = np.transpose(np.array((coin_data.set_index(['datetime',g])
         .stack().groupby(level=0)
         .apply(lambda x: np.array(x.values.tolist()).reshape(len(x)))
         .tolist())))
-X = X[:, int(X.shape[1]*0.80):] # last 20% of snapshots
+X = X[:, int(X.shape[1]*0.9):] # last 10% of snapshots
 
 # Various setup variables and definitions
 d = X.shape[0]
 m = X.shape[1]
 s = int(d*(d+1)/2) # number of second order poly terms
-psi = observables.monomials(4) # I don't have enough memory for 5+
+psi = observables.monomials(4)
 Psi_X = psi(X)
 nablaPsi = psi.diff(X)
 nabla2Psi = psi.ddiff(X)
@@ -69,7 +69,7 @@ def dpsi(k, l, t=1):
 dPsi_X = np.zeros((n, m))
 for row in range(n):
     for column in range(m-1):
-        dPsi_X[row, column] = dpsi(row, column, d)
+        dPsi_X[row, column] = dpsi(row, column)
 
 # Calculate Koopman generator approximation
 train = int(m * 0.8)
@@ -147,19 +147,17 @@ def sigma(l):
     return sigma
 
 def epsilon_t(l):
-    np.linalg.inv(sigma(l-1).T @ sigma(l-1)) @ sigma(l-1).T @ (X[:, l].reshape(-1, 1) - b_v2(l-1))
+    return np.linalg.inv(sigma(l-1).T @ sigma(l-1)) @ sigma(l-1).T @ (X[:, l].reshape(-1, 1) - b_v2(l-1))
 
 # snapshots by coins
 # rows are snapshots
-epsilons = np.zeros((m, d))
+epsilons = np.zeros((d, m, 1))
 for snapshot_index in range(1, m):
-    epsilons[snapshot_index] = epsilon_t(snapshot_index)
+    epsilons[:, snapshot_index] = epsilon_t(snapshot_index)
 
 # Epsilons produced make no sense...
 # We are looking for numbers that follow a
 # normal distribution but these are way off
 
-print(epsilons.shape)
-epsilons = epsilons.T
-print(epsilons.shape)
-# np.save('saved_epsilons', epsilons)
+np.save('gedmd_epsilons', epsilons)
+np.savetxt("gedmd_epsilons.csv", epsilons.reshape(-1, epsilons.shape[1]), delimiter=",")
