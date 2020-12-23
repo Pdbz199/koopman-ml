@@ -167,5 +167,5 @@ if __name__ == '__main__':
     print(epsilons)
     print(epsilons.shape)
 
-    # np.save('gedmd_epsilons_fixed', epsilons)
-    # np.savetxt("gedmd_epsilons_fixed.csv", epsilons.reshape(-1, epsilons.shape[1]), delimiter=",")
+    np.save('gedmd_epsilons_fixed', epsilons)
+    np.savetxt("gedmd_epsilons_fixed.csv", epsilons.reshape(-1, epsilons.shape[1]), delimiter=",")
