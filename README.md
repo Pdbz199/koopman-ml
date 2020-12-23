@@ -1,5 +1,6 @@
 # Koopman ML
 
+Because this was developed using Pymp in a Unix environment, some of this code cannot be run on Windows.
 Our dataset was found on [Kaggle](https://www.kaggle.com/tencars/392-crypto-currency-pairs-at-minute-resolution)
 
 ## Installation
